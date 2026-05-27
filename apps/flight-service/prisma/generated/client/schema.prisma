@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Flight {
+  id             String   @id @default(uuid())
+  flightNumber   String   @unique
+  origin         String
+  destination    String
+  departureTime  DateTime
+  arrivalTime    DateTime
+  price          Float
+  availableSeats Int      @default(0)
+  status         String   @default("SCHEDULED") // SCHEDULED, DELAYED, CANCELLED
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

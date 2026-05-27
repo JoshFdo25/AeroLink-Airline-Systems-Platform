@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+  FLIGHT_CREW
+}
+
+model Passenger {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  password       String // Hashed via bcrypt
+  firstName      String
+  lastName       String
+  role           Role     @default(USER)
+  passportNumber String? // Encrypted via AES-256
+  kycVerified    Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
