@@ -1,5 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { OnEvent } from '@nestjs/event-emitter';
+import { RedisBusService } from '../common/redis-bus/redis-bus.service';
 import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFlightDto } from './dto/create-flight.dto';
@@ -10,6 +12,7 @@ export class FlightsService {
   constructor(
     private prisma: PrismaService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private redisBus: RedisBusService,
   ) {}
 
   async create(createFlightDto: CreateFlightDto) {
@@ -81,5 +84,34 @@ export class FlightsService {
     await this.cacheManager.del('all_flights');
     await this.cacheManager.del(`flight_${id}`);
     return flight;
+  }
+
+  @OnEvent('booking.created')
+  async handleBookingCreated(payload: any) {
+    console.log(`[Saga] Intercepted booking.created for Flight ${payload.flightId}. Checking seats...`);
+    const flight = await this.prisma.flight.findUnique({ where: { id: payload.flightId } });
+    
+    if (flight && flight.availableSeats > 0) {
+      // Reserve the seat
+      await this.prisma.flight.update({
+        where: { id: payload.flightId },
+        data: { availableSeats: { decrement: 1 } },
+      });
+      console.log(`[Saga] Seat reserved! Emitting seat.reserved`);
+      this.redisBus.publish('seat.reserved', payload);
+    } else {
+      console.log(`[Saga] Flight full or not found! Emitting seat.reservation.failed`);
+      this.redisBus.publish('seat.reservation.failed', payload);
+    }
+  }
+
+  @OnEvent('booking.cancelled')
+  async handleBookingCancelled(payload: any) {
+    console.log(`[Saga Rollback] Intercepted booking.cancelled for Flight ${payload.flightId}. Releasing seat...`);
+    await this.prisma.flight.update({
+      where: { id: payload.flightId },
+      data: { availableSeats: { increment: 1 } },
+    });
+    console.log(`[Saga Rollback] Seat released!`);
   }
 }

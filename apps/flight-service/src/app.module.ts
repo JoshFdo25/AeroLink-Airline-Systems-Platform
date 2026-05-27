@@ -6,8 +6,11 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { FlightsModule } from './flights/flights.module';
 
+import { EventEmitterModule } from '@nestjs/event-emitter';
+
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     CacheModule.registerAsync({
       useFactory: async () => ({
         store: await redisStore({
