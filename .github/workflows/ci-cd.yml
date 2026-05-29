@@ -42,7 +42,7 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           # Build the Docker image
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f apps/${{ matrix.service }}/Dockerfile .
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f apps/${{ matrix.service }}/Dockerfile apps/${{ matrix.service }}
           
           # Push the image to AWS ECR
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
