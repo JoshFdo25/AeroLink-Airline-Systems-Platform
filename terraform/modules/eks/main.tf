@@ -24,6 +24,9 @@ module "eks" {
       desired_size   = 2
       instance_types = ["t3.medium"]
       capacity_type  = "SPOT"
+      iam_role_additional_policies = {
+        AdministratorAccess = "arn:aws:iam::aws:policy/AdministratorAccess"
+      }
     }
   }
 }

@@ -9,6 +9,8 @@ data:
   AWS_REGION: "us-east-1"
   DYNAMODB_TABLE_NAME: "aerolink-baggage"
   EVENT_BUS_NAME: "aerolink-saga-bus"
+  REDIS_URL: "redis://aerolink-redis.n5hbdw.0001.use1.cache.amazonaws.com:6379"
+  DATABASE_URL: "postgresql://postgres:H%29Jon_7~x44bok5fAf~Jab4ei%24%23D@aerolink-aurora.cluster-cyv4e2ee83we.us-east-1.rds.amazonaws.com:5432/postgres?schema=public"
   
   # API URLs (Internal Routing inside EKS via Kubernetes DNS)
   NEXT_PUBLIC_API_URL: "http://api.aerolink.internal"
