@@ -175,7 +175,7 @@ export default function AdminBaggageScanner() {
                         const val = e.target.value;
                         if (!val) return;
                         const [newStatus, newLocation] = val.split('|');
-                        handleUpdateStatus(bag.id, newStatus, newLocation);
+                        handleUpdateStatus(bag.id, newStatus || '', newLocation || '');
                       }}
                       className="bg-slate-950 border border-slate-700 text-slate-200 text-sm rounded-lg p-2.5 focus:border-cyan-500 outline-none w-full sm:w-48"
                       value="" // Always reset to placeholder
