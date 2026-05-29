@@ -2,19 +2,34 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../base
+- ../../base
 
 namespace: aerolink
 
 # These image tags get automatically updated by the GitHub Actions CI/CD Pipeline
 images:
-  - name: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-auth-service
-    newTag: latest
-  - name: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-flight-service
-    newTag: latest
-  - name: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-booking-service
-    newTag: latest
-  - name: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-baggage-service
-    newTag: latest
-  - name: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-frontend
-    newTag: latest
+- name: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-auth-service
+  newTag: latest
+- name: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-baggage-service
+  newTag: latest
+- name: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-booking-service
+  newTag: latest
+- name: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-flight-service
+  newTag: latest
+- name: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-frontend
+  newTag: latest
+- name: aerolink-auth-service
+  newName: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-auth-service
+  newTag: 8ce294659b35f06e41b0530122650059df735e51
+- name: aerolink-baggage-service
+  newName: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-baggage-service
+  newTag: 8ce294659b35f06e41b0530122650059df735e51
+- name: aerolink-booking-service
+  newName: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-booking-service
+  newTag: 8ce294659b35f06e41b0530122650059df735e51
+- name: aerolink-flight-service
+  newName: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-flight-service
+  newTag: 8ce294659b35f06e41b0530122650059df735e51
+- name: aerolink-frontend
+  newName: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-frontend
+  newTag: 8ce294659b35f06e41b0530122650059df735e51
