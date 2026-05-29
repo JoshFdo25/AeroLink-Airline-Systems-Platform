@@ -41,8 +41,15 @@ jobs:
           ECR_REPOSITORY: ${{ env.ECR_REPOSITORY_PREFIX }}-${{ matrix.service }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
+          # Use root context for frontend (monorepo deps), app context for others
+          if [ "${{ matrix.service }}" = "frontend" ]; then
+            CONTEXT="."
+          else
+            CONTEXT="apps/${{ matrix.service }}"
+          fi
+          
           # Build the Docker image
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f apps/${{ matrix.service }}/Dockerfile apps/${{ matrix.service }}
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f apps/${{ matrix.service }}/Dockerfile $CONTEXT
           
           # Push the image to AWS ECR
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
