@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - services/configmap.yaml
+  - services/auth-deployment.yaml
+  - services/flight-deployment.yaml
+  - services/booking-deployment.yaml
+  - services/baggage-deployment.yaml
+  - services/frontend-deployment.yaml
+  - istio/aerolink-gateway.yaml
+  - istio/aerolink-virtualservice.yaml
+  - istio/aerolink-destinationrules.yaml
+  - istio/aerolink-peerauth.yaml
+  - keda/scalers.yaml

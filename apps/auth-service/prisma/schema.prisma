@@ -16,7 +16,7 @@ enum Role {
 model Passenger {
   id             String   @id @default(uuid())
   email          String   @unique
-  password       String   // Hashed via bcrypt
+  password       String?  // Hashed via bcrypt
   firstName      String
   lastName       String
   role           Role     @default(USER)

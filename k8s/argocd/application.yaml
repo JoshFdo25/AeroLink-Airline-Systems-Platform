@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aerolink-platform
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/your-org/aerolink-platform.git'
+    targetRevision: main
+    path: k8s/overlays/prod
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: aerolink
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

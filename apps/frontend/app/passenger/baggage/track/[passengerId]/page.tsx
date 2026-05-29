@@ -38,30 +38,51 @@ export default function PassengerBaggageTracker() {
     };
     fetchBags();
 
-    // WebSocket Connection
-    const socket: Socket = io("http://localhost:3004");
-    
-    socket.on("connect", () => {
-      console.log("Connected to Baggage WebSocket!");
-    });
+    // WebSocket Connection: AWS API Gateway vs Local Fallback
+    const awsEndpoint = process.env.NEXT_PUBLIC_AWS_WEBSOCKET_API;
 
-    socket.on("baggage.updated", (updatedBag: any) => {
-      if (updatedBag.passengerId === passengerId) {
-        console.log("Real-time bag update received:", updatedBag);
-        setBags(prevBags => {
-          // If the bag already exists, update it. Otherwise, add it (in case they just checked it in).
-          const exists = prevBags.some(b => b.id === updatedBag.id);
-          if (exists) {
-            return prevBags.map(b => b.id === updatedBag.id ? updatedBag : b);
-          }
-          return [updatedBag, ...prevBags];
-        });
-      }
-    });
+    if (awsEndpoint) {
+      console.log("Connecting to AWS API Gateway WebSockets...");
+      const ws = new WebSocket(awsEndpoint);
+      
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'baggage.updated' && data.payload.passengerId === passengerId) {
+          console.log("Real-time bag update received from AWS Lambda:", data.payload);
+          setBags(prevBags => {
+            const exists = prevBags.some(b => b.id === data.payload.id);
+            if (exists) return prevBags.map(b => b.id === data.payload.id ? data.payload : b);
+            return [data.payload, ...prevBags];
+          });
+        }
+      };
 
-    return () => {
-      socket.disconnect();
-    };
+      return () => {
+        ws.close();
+      };
+    } else {
+      console.log("Connecting to local Socket.IO fallback...");
+      const socket: Socket = io("http://localhost:3004");
+      
+      socket.on("connect", () => {
+        console.log("Connected to local Baggage WebSocket!");
+      });
+
+      socket.on("baggage.updated", (updatedBag: any) => {
+        if (updatedBag.passengerId === passengerId) {
+          console.log("Real-time bag update received from Socket.IO:", updatedBag);
+          setBags(prevBags => {
+            const exists = prevBags.some(b => b.id === updatedBag.id);
+            if (exists) return prevBags.map(b => b.id === updatedBag.id ? updatedBag : b);
+            return [updatedBag, ...prevBags];
+          });
+        }
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    }
   }, [passengerId]);
 
   const getStepIndex = (status: string) => {

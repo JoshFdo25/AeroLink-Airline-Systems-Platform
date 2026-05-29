@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+namespace: aerolink
+
+# These image tags get automatically updated by the GitHub Actions CI/CD Pipeline
+images:
+  - name: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-auth-service
+    newTag: latest
+  - name: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-flight-service
+    newTag: latest
+  - name: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-booking-service
+    newTag: latest
+  - name: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-baggage-service
+    newTag: latest
+  - name: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-frontend
+    newTag: latest
