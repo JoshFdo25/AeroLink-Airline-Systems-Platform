@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/your-org/aerolink-platform.git'
+    repoURL: 'https://github.com/JoshFdo25/AeroLink-Airline-Systems-Platform.git'
     targetRevision: main
     path: k8s/overlays/prod
   destination:
