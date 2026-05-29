@@ -4,6 +4,9 @@ export class CreateBookingDto {
   @ApiProperty({ example: 'pass-123', description: 'The ID of the logged in passenger' })
   passengerId!: string;
 
+  @ApiProperty({ example: '12A', description: 'Selected seat number' })
+  seatNumber!: string;
+
   @ApiProperty({ example: 'flight-123', description: 'The flight to book' })
   flightId!: string;
 

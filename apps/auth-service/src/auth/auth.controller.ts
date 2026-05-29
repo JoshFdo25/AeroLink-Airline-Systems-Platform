@@ -21,4 +21,10 @@ export class AuthController {
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
+
+  @Post('seed-admin')
+  @ApiOperation({ summary: 'Temporary endpoint to seed the admin user' })
+  seedAdmin() {
+    return this.authService.seedAdmin();
+  }
 }

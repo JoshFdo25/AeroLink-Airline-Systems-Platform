@@ -16,6 +16,7 @@ model Flight {
   arrivalTime    DateTime
   price          Float
   availableSeats Int      @default(0)
+  bookedSeats    String[] @default([])
   status         String   @default("SCHEDULED") // SCHEDULED, DELAYED, CANCELLED
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

@@ -17,6 +17,7 @@ model Booking {
   id             String        @id @default(uuid())
   passengerId    String
   flightId       String
+  seatNumber     String
   paymentToken   String        // PCI-DSS compliant token (e.g. "tok_visa")
   price          Float
   status         BookingStatus @default(PENDING)

@@ -18,6 +18,7 @@ export class CreateBookingHandler implements ICommandHandler<CreateBookingComman
       data: {
         passengerId: command.passengerId,
         flightId: command.flightId,
+        seatNumber: command.seatNumber,
         paymentToken: command.paymentToken, // PCI-DSS Mock
         price: command.price,
         status: 'PENDING', // Saga Pattern starts here!
@@ -31,8 +32,9 @@ export class CreateBookingHandler implements ICommandHandler<CreateBookingComman
       bookingId: booking.id,
       passengerId: booking.passengerId,
       flightId: booking.flightId,
+      seatNumber: booking.seatNumber,
       paymentToken: booking.paymentToken,
-      price: booking.price
+      price: booking.price,
     });
 
     return booking;

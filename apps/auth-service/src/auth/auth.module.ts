@@ -5,6 +5,8 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { EncryptionService } from '../common/encryption/encryption.service';
+import { EmailService } from './email.service';
+import { RedisBusService } from '../common/redis-bus/redis-bus.service';
 
 @Module({
   imports: [
@@ -15,6 +17,6 @@ import { EncryptionService } from '../common/encryption/encryption.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, EncryptionService],
+  providers: [AuthService, JwtStrategy, EncryptionService, EmailService, RedisBusService],
 })
 export class AuthModule {}

@@ -55,4 +55,23 @@ export class AuthService {
       access_token: this.jwtService.sign(payload),
     };
   }
+
+  async seedAdmin() {
+    const existing = await this.prisma.passenger.findUnique({ where: { email: 'admin@aerolink.com' } });
+    if (existing) return { message: 'Admin already exists!' };
+
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    
+    await this.prisma.passenger.create({
+      data: {
+        email: 'admin@aerolink.com',
+        password: hashedPassword,
+        firstName: 'System',
+        lastName: 'Admin',
+        role: 'ADMIN',
+        kycVerified: true,
+      },
+    });
+    return { message: 'Admin successfully created with email admin@aerolink.com and password admin123' };
+  }
 }

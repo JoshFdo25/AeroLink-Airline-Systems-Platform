@@ -16,7 +16,7 @@ export class BookingController {
   async createBooking(@Body() dto: CreateBookingDto) {
     // Dispatch to CQRS Write Model
     return this.commandBus.execute(
-      new CreateBookingCommand(dto.passengerId, dto.flightId, dto.paymentToken, dto.price)
+      new CreateBookingCommand(dto.passengerId, dto.flightId, dto.seatNumber, dto.paymentToken, dto.price)
     );
   }
 

@@ -29,6 +29,24 @@ export class FlightsController {
     return this.flightsService.findOne(id);
   }
 
+  @Get(':id/seats')
+  @ApiOperation({ summary: 'Get seat statuses (BOOKED and LOCKED)' })
+  getSeatStatuses(@Param('id') id: string) {
+    return this.flightsService.getSeatStatuses(id);
+  }
+
+  @Post(':id/seats/lock')
+  @ApiOperation({ summary: 'Lock a seat temporarily for booking' })
+  lockSeat(@Param('id') id: string, @Body('seatNumber') seatNumber: string) {
+    return this.flightsService.lockSeat(id, seatNumber);
+  }
+
+  @Delete(':id/seats/lock/:seatNumber')
+  @ApiOperation({ summary: 'Release a temporarily locked seat' })
+  unlockSeat(@Param('id') id: string, @Param('seatNumber') seatNumber: string) {
+    return this.flightsService.unlockSeat(id, seatNumber);
+  }
+
   @Patch(':id')
   @ApiOperation({ summary: 'Update a flight by ID (e.g. status changes)' })
   update(@Param('id') id: string, @Body() updateFlightDto: UpdateFlightDto) {

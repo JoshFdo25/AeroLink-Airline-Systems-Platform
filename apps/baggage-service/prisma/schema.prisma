@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client-baggage"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum BaggageStatus {
+  CHECKED_IN
+  LOADED
+  IN_TRANSIT
+  READY_FOR_PICKUP
+  CLAIMED
+}
+
+model Baggage {
+  id             String        @id @default(uuid())
+  passengerId    String
+  flightId       String
+  status         BaggageStatus @default(CHECKED_IN)
+  location       String        // e.g., "Terminal 1 Counter", "Aircraft Hold", "Carousel 4"
+  updatedAt      DateTime      @updatedAt
+  createdAt      DateTime      @default(now())
+}

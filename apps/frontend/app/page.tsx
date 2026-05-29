@@ -1,102 +1,156 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
-import styles from "./page.module.css";
+"use client";
 
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
-
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
-
-  return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Search, MapPin, Calendar, PlaneTakeoff, ArrowRight } from "lucide-react";
+import { flightApi } from "../lib/api";
+import Link from "next/link";
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <ThemeImage
-          className={styles.logo}
-          srcLight="turborepo-dark.svg"
-          srcDark="turborepo-light.svg"
-          alt="Turborepo logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>apps/web/app/page.tsx</code>
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [flights, setFlights] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
-            target="_blank"
-            rel="noopener noreferrer"
+  const fetchFlights = async () => {
+    setLoading(true);
+    setHasSearched(true);
+    try {
+      // Connect to the Flight Service microservice
+      const response = await flightApi.get("/flights");
+      setFlights(response.data);
+    } catch (error) {
+      console.error("Failed to load flights:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <main className="min-h-screen flex flex-col items-center justify-start pt-20 px-4 relative overflow-hidden">
+      {/* Premium Background Elements */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/20 blur-[150px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-cyan-600/20 blur-[150px] rounded-full pointer-events-none" />
+
+      {/* Hero Header */}
+      <motion.div 
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="text-center z-10 mb-12"
+      >
+        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
+          The Future of <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Aviation</span>
+        </h1>
+        <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto font-light">
+          Experience seamless global travel powered by an advanced distributed microservices architecture.
+        </p>
+      </motion.div>
+
+      {/* Glassmorphic Search Module */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="w-full max-w-5xl glass-panel rounded-[2rem] p-6 md:p-8 mb-16 z-10 shadow-2xl shadow-cyan-900/20"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-slate-900/60 rounded-2xl p-4 border border-slate-700/50 flex items-center space-x-3 transition-colors focus-within:border-cyan-500/50">
+            <MapPin className="text-cyan-400 w-5 h-5 flex-shrink-0" />
+            <input type="text" placeholder="From (e.g. LHR)" className="bg-transparent outline-none w-full text-slate-100 placeholder-slate-500 font-medium" defaultValue="LHR" />
+          </div>
+          
+          <div className="bg-slate-900/60 rounded-2xl p-4 border border-slate-700/50 flex items-center space-x-3 transition-colors focus-within:border-blue-500/50">
+            <MapPin className="text-blue-400 w-5 h-5 flex-shrink-0" />
+            <input type="text" placeholder="To (e.g. JFK)" className="bg-transparent outline-none w-full text-slate-100 placeholder-slate-500 font-medium" defaultValue="JFK" />
+          </div>
+          
+          <div className="bg-slate-900/60 rounded-2xl p-4 border border-slate-700/50 flex items-center space-x-3 transition-colors focus-within:border-slate-500/50">
+            <Calendar className="text-slate-400 w-5 h-5 flex-shrink-0" />
+            <input type="date" className="bg-transparent outline-none w-full text-slate-100 font-medium" />
+          </div>
+          
+          <button 
+            onClick={fetchFlights}
+            disabled={loading}
+            className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-2xl p-4 flex items-center justify-center space-x-2 transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-cyan-500/25"
           >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://turborepo.dev/docs?utm_source"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+            {loading ? (
+              <span className="animate-pulse">Scanning DB...</span>
+            ) : (
+              <>
+                <Search className="w-5 h-5" />
+                <span>Search Flights</span>
+              </>
+            )}
+          </button>
         </div>
-        <Button appName="web" className={styles.secondary}>
-          Open alert
-        </Button>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.dev?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turborepo.dev →
-        </a>
-      </footer>
-    </div>
+      </motion.div>
+
+      {/* Flight Results */}
+      {hasSearched && (
+        <div className="w-full max-w-5xl z-10 pb-20">
+          <h2 className="text-2xl font-bold mb-6 text-white pl-2 border-l-4 border-cyan-500">Available Routes</h2>
+          
+          {flights.length === 0 && !loading ? (
+            <div className="text-center py-12 glass-panel rounded-2xl text-slate-400">
+              No flights found for this route.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {flights.map((flight, i) => (
+                <motion.div 
+                  key={flight.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.1 }}
+                  className="glass-panel p-6 rounded-2xl flex flex-col hover:border-cyan-500/40 transition-all hover:shadow-lg hover:shadow-cyan-900/20 group"
+                >
+                  <div className="flex justify-between items-start mb-8">
+                    <div>
+                      <h3 className="text-2xl font-black text-white tracking-wider">{flight.flightNumber}</h3>
+                      <span className="inline-block mt-1 px-2 py-1 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        {flight.status || "SCHEDULED"}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">${flight.price}</p>
+                      <p className="text-slate-500 text-xs font-medium uppercase tracking-wider mt-1">Per Seat</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center mb-8 px-2">
+                    <div className="text-center">
+                      <p className="text-4xl font-black text-white">{flight.origin}</p>
+                      <p className="text-slate-400 text-xs mt-1 uppercase tracking-widest">Origin</p>
+                    </div>
+                    
+                    <div className="flex-1 flex flex-col items-center justify-center px-6 relative">
+                      <div className="h-[2px] w-full bg-slate-700 relative">
+                        <div className="absolute top-0 left-0 h-full w-0 bg-cyan-500 group-hover:w-full transition-all duration-1000 ease-out" />
+                      </div>
+                      <PlaneTakeoff className="absolute text-slate-500 w-6 h-6 group-hover:text-cyan-400 transition-colors duration-500" />
+                    </div>
+                    
+                    <div className="text-center">
+                      <p className="text-4xl font-black text-white">{flight.destination}</p>
+                      <p className="text-slate-400 text-xs mt-1 uppercase tracking-widest">Dest</p>
+                    </div>
+                  </div>
+
+                  {/* Note: This routes to the secure Passenger Portal to trigger the Saga! */}
+                  <Link 
+                    href={`/passenger/booking/${flight.id}`}
+                    className="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-3.5 text-center text-white font-semibold transition-all flex items-center justify-center space-x-2 group-hover:bg-cyan-500/10 group-hover:border-cyan-500/30 group-hover:text-cyan-300"
+                  >
+                    <span>Proceed to Booking</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </main>
   );
 }
