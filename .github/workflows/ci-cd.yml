@@ -11,6 +11,10 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY_PREFIX: aerolink
+  AWS_ACCOUNT_ID: 643942183295
+
+permissions:
+  contents: write
 
 jobs:
   build-and-push:
@@ -69,13 +73,16 @@ jobs:
       - name: Update kustomization.yaml
         run: |
           cd k8s/overlays/prod
-          # In a real environment, we would use `kustomize edit set image` to update the tags
-          # Example: kustomize edit set image aerolink-auth-service=account.dkr.ecr.us-east-1.amazonaws.com/aerolink-auth-service:${{ github.sha }}
-          echo "Updating images to ${{ github.sha }}"
+          # Update all 5 services to the newly built image tags
+          kustomize edit set image aerolink-auth-service=${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_PREFIX }}-auth-service:${{ github.sha }}
+          kustomize edit set image aerolink-flight-service=${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_PREFIX }}-flight-service:${{ github.sha }}
+          kustomize edit set image aerolink-booking-service=${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_PREFIX }}-booking-service:${{ github.sha }}
+          kustomize edit set image aerolink-baggage-service=${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_PREFIX }}-baggage-service:${{ github.sha }}
+          kustomize edit set image aerolink-frontend=${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_PREFIX }}-frontend:${{ github.sha }}
           
       - name: Commit and Push Changes
         run: |
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'actions@github.com'
           git commit -am "chore: update image tags to ${{ github.sha }} [skip ci]" || echo "No changes to commit"
-          git push
+          git push origin main
