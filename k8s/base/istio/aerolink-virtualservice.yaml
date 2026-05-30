@@ -12,6 +12,8 @@ spec:
   - match:
     - uri:
         prefix: /api/auth
+    rewrite:
+      uri: /auth
     route:
     - destination:
         host: auth-service
@@ -20,6 +22,8 @@ spec:
   - match:
     - uri:
         prefix: /api/flights
+    rewrite:
+      uri: /flights
     route:
     - destination:
         host: flight-service
@@ -28,6 +32,8 @@ spec:
   - match:
     - uri:
         prefix: /api/bookings
+    rewrite:
+      uri: /bookings
     route:
     - destination:
         host: booking-service
@@ -36,6 +42,8 @@ spec:
   - match:
     - uri:
         prefix: /api/baggage
+    rewrite:
+      uri: /baggage
     route:
     - destination:
         host: baggage-service
