@@ -13,7 +13,7 @@ data:
   DATABASE_URL: "postgresql://postgres:%21ISdV9h.IViU%3CzOl%5D_myvIqv%5D1Sd@aerolink-aurora.cluster-cyv4e2ee83we.us-east-1.rds.amazonaws.com:5432/postgres?schema=public&sslmode=no-verify"
   
   # API URLs (Internal Routing inside EKS via Kubernetes DNS)
-  NEXT_PUBLIC_API_URL: "http://api.aerolink.internal"
+  NEXT_PUBLIC_API_URL: "/api"
   NEXT_PUBLIC_FLIGHT_API_URL: "http://flight-service.aerolink.svc.cluster.local:80"
   NEXT_PUBLIC_AUTH_API_URL: "http://auth-service.aerolink.svc.cluster.local:80"
   NEXT_PUBLIC_BOOKING_API_URL: "http://booking-service.aerolink.svc.cluster.local:80"
