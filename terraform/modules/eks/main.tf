@@ -19,10 +19,10 @@ module "eks" {
 
   eks_managed_node_groups = {
     spot_nodes = {
-      min_size       = 1
-      max_size       = 3
-      desired_size   = 2
-      instance_types = ["t3.medium"]
+      min_size       = 2
+      max_size       = 5
+      desired_size   = 3
+      instance_types = ["t3.large"]
       capacity_type  = "SPOT"
       iam_role_additional_policies = {
         AdministratorAccess = "arn:aws:iam::aws:policy/AdministratorAccess"

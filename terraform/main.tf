@@ -26,7 +26,10 @@ module "dynamodb" {
 }
 
 module "elasticache_redis" {
-  source = "./modules/elasticache-redis"
+  source                      = "./modules/elasticache-redis"
+  vpc_id                      = module.vpc.vpc_id
+  private_subnets             = module.vpc.private_subnets
+  private_subnets_cidr_blocks = module.vpc.private_subnets_cidr_blocks
 }
 
 module "eventbridge" {
