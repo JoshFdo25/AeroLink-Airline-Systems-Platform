@@ -4,6 +4,7 @@ module "aurora" {
   name                 = "aerolink-aurora"
   engine               = "aurora-postgresql"
   master_username      = "postgres"
+  skip_final_snapshot  = true
   vpc_id               = var.vpc_id
   db_subnet_group_name = var.database_subnet_group_name
   security_group_rules = {
