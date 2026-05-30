@@ -85,4 +85,5 @@ jobs:
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'actions@github.com'
           git commit -am "chore: update image tags to ${{ github.sha }} [skip ci]" || echo "No changes to commit"
+          git pull --rebase origin main
           git push origin main
