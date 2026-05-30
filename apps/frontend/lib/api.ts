@@ -1,21 +1,21 @@
 import axios from 'axios';
 
-// Flight Service (Port 3001)
+// Flight Service
 export const flightApi = axios.create({
-  baseURL: 'http://localhost:3001',
+  baseURL: process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/flights` : '/api/flights',
 });
 
-// Auth / Passenger Service (Port 3002)
+// Auth / Passenger Service
 export const authApi = axios.create({
-  baseURL: 'http://localhost:3002',
+  baseURL: process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/auth` : '/api/auth',
 });
 
-// Booking Service (Port 3003)
+// Booking Service
 export const bookingApi = axios.create({
-  baseURL: 'http://localhost:3003',
+  baseURL: process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/bookings` : '/api/bookings',
 });
 
-// Baggage Tracking Service (Port 3004)
+// Baggage Tracking Service
 export const baggageApi = axios.create({
-  baseURL: 'http://localhost:3004',
+  baseURL: process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/baggage` : '/api/baggage',
 });
