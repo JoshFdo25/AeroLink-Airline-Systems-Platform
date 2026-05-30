@@ -93,6 +93,15 @@ export class AuthService {
     const passenger = await this.prisma.passenger.findUnique({ where: { email: loginDto.email } });
     if (!passenger) throw new UnauthorizedException('User profile not found');
 
+    if (accessToken === 'MOCK_AWS_ACCESS_TOKEN') {
+      const jwt = require('jsonwebtoken');
+      accessToken = jwt.sign(
+        { sub: passenger.id, email: passenger.email, role: passenger.role },
+        process.env.JWT_SECRET || 'fallback_mock_secret',
+        { expiresIn: '1h' }
+      );
+    }
+
     return {
       access_token: accessToken,
     };
