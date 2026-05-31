@@ -2,8 +2,8 @@ import { NodeSDK } from '@opentelemetry/sdk-node';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { AWSXRayIdGenerator } from '@opentelemetry/id-generator-aws-xray';
-import { Resource } from '@opentelemetry/resources';
-import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+
+process.env.OTEL_SERVICE_NAME = 'booking-service';
 
 const traceExporter = new OTLPTraceExporter({
   // Using the ADOT Collector endpoint (deployed in the cluster)
@@ -11,9 +11,6 @@ const traceExporter = new OTLPTraceExporter({
 });
 
 export const otelSDK = new NodeSDK({
-  resource: new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: 'booking-service',
-  }),
   traceExporter,
   instrumentations: [getNodeAutoInstrumentations()],
   idGenerator: new AWSXRayIdGenerator(), // Important for AWS X-Ray compatibility
