@@ -37,10 +37,7 @@ export class AuthService {
       await this.cognitoClient.send(command);
     } catch (error: any) {
       console.error('[Cognito Error] Failed to register user:', error);
-      // Fallback for local testing without real AWS credentials
-      if (!error.message.includes('dummy_client_id') && !error.message.includes('Could not resolve')) {
-        throw new ConflictException(error.message);
-      }
+      throw new ConflictException(error.message);
     }
 
     // 2. Encrypt sensitive PII using AWS KMS
@@ -68,7 +65,7 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    let accessToken = 'MOCK_AWS_ACCESS_TOKEN';
+    let accessToken = '';
     
     // 1. Authenticate with AWS Cognito
     try {
@@ -81,26 +78,18 @@ export class AuthService {
         },
       });
       const response = await this.cognitoClient.send(command);
-      accessToken = response.AuthenticationResult?.AccessToken || accessToken;
+      if (!response.AuthenticationResult?.AccessToken) {
+        throw new UnauthorizedException('Missing access token from Cognito');
+      }
+      accessToken = response.AuthenticationResult.AccessToken;
     } catch (error: any) {
       console.error('[Cognito Error] Failed to authenticate user:', error);
-      if (!error.message.includes('dummy_client_id') && !error.message.includes('Could not resolve')) {
-        throw new UnauthorizedException(error.message);
-      }
+      throw new UnauthorizedException(error.message);
     }
 
     // 2. Ensure passenger profile exists in our local DB
     const passenger = await this.prisma.passenger.findUnique({ where: { email: loginDto.email } });
     if (!passenger) throw new UnauthorizedException('User profile not found');
-
-    if (accessToken === 'MOCK_AWS_ACCESS_TOKEN') {
-      const jwt = require('jsonwebtoken');
-      accessToken = jwt.sign(
-        { sub: passenger.id, email: passenger.email, role: passenger.role },
-        process.env.JWT_SECRET || 'fallback_mock_secret',
-        { expiresIn: '1h' }
-      );
-    }
 
     return {
       access_token: accessToken,

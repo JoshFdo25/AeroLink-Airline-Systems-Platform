@@ -26,11 +26,6 @@ export class CognitoAuthGuard implements CanActivate {
 
     const token = authHeader.split(' ')[1];
 
-    if (token === 'MOCK_AWS_ACCESS_TOKEN') {
-      // Allow bypass for local dev before Cognito is fully provisioned
-      request.user = { userId: 'mock-user-id', role: 'USER' };
-      return true;
-    }
 
     try {
       if (!this.verifier) throw new Error("Cognito verifier not initialized");
