@@ -1,0 +1,40 @@
+{
+  "info": {
+    "name": "AeroLink Integration Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get Flights",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/flights",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "flights"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Register Passenger",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"Integration\",\n  \"lastName\": \"Test\",\n  \"email\": \"testuser@aerolink.com\",\n  \"password\": \"P@ssw0rd123!\",\n  \"passportNumber\": \"A1234567\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/auth/register",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "auth", "register"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
