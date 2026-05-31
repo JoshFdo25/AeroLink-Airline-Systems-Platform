@@ -182,7 +182,7 @@ export class FlightsService {
     }
   }
 
-  @OnEvent('booking.cancelled')
+  @OnEvent('booking.cancelled_seat')
   async handleBookingCancelled(payload: any) {
     console.log(`[Saga Rollback] Intercepted booking.cancelled for Flight ${payload.flightId}. Releasing seat ${payload.seatNumber}...`);
     

@@ -10,7 +10,8 @@ export class PaymentMockService {
 
   @OnEvent('seat.reserved')
   async processPayment(payload: any) {
-    this.logger.log(`Received seat reservation confirmation for Booking ${payload.bookingId}. Processing PCI-DSS token: ${payload.paymentToken}...`);
+    const bookingId = payload.bookingId || payload.id;
+    this.logger.log(`Received seat reservation confirmation for Booking ${bookingId}. Processing PCI-DSS token: ${payload.paymentToken}...`);
 
     // Simulate network delay to payment gateway
     await new Promise(resolve => setTimeout(resolve, 3000));
@@ -19,11 +20,11 @@ export class PaymentMockService {
     const isSuccess = Math.random() < 0.8;
 
     if (payload.paymentToken === 'tok_visa') {
-      this.logger.log(`Payment Processed Successfully for Booking ${payload.bookingId}.`);
-      this.redisBus.publish('payment.successful', { bookingId: payload.bookingId });
+      this.logger.log(`Payment Processed Successfully for Booking ${bookingId}.`);
+      this.redisBus.publish('payment.successful', { bookingId: bookingId });
     } else {
-      this.logger.warn(`Payment FAILED for Booking ${payload.bookingId} (Insufficient Funds). Triggering Saga Rollback...`);
-      this.redisBus.publish('payment.failed', { bookingId: payload.bookingId, flightId: payload.flightId });
+      this.logger.warn(`Payment FAILED for Booking ${bookingId} (Insufficient Funds). Triggering Saga Rollback...`);
+      this.redisBus.publish('payment.failed', { bookingId: bookingId, flightId: payload.flightId });
     }
   }
 }

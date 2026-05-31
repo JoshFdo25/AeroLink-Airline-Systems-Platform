@@ -82,22 +82,23 @@ export class BookingSagaService {
   }
 
   @OnEvent('seat.reservation.failed')
-  async handleSeatFailed(payload: { bookingId: string }) {
-    this.logger.warn(`Saga Rollback: Seat reservation failed (Flight Full). Cancelling Booking ${payload.bookingId}.`);
+  async handleSeatFailed(payload: any) {
+    const bookingId = payload.bookingId || payload.id;
+    this.logger.warn(`Saga Rollback: Seat reservation failed (Flight Full). Cancelling Booking ${bookingId}.`);
     try {
       await this.docClient.send(new UpdateCommand({
         TableName: this.tableName,
-        Key: { pk: `BOOKING#${payload.bookingId}`, sk: `METADATA` },
+        Key: { pk: `BOOKING#${bookingId}`, sk: `METADATA` },
         UpdateExpression: 'SET #status = :status',
         ExpressionAttributeNames: { '#status': 'status' },
         ExpressionAttributeValues: { ':status': 'CANCELLED' },
       }));
     } catch (error) {
-      this.logger.error(`[DynamoDB] Failed to cancel booking ${payload.bookingId}. Mocking fallback.`);
+      this.logger.error(`[DynamoDB] Failed to cancel booking ${bookingId}. Mocking fallback.`);
     }
 
     // Publish booking.cancelled event for the CQRS Projector!
-    await this.redisBus.publish('booking.cancelled', { bookingId: payload.bookingId });
+    await this.redisBus.publish('booking.cancelled', { bookingId: bookingId });
   }
 
   @OnEvent('flight.status.updated')
