@@ -2,20 +2,20 @@ import axios from 'axios';
 
 // Flight Service
 export const flightApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/flights` : '/api/flights',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || '/api',
 });
 
 // Auth / Passenger Service
 export const authApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/auth` : '/api/auth',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || '/api',
 });
 
 // Booking Service
 export const bookingApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/bookings` : '/api/bookings',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || '/api',
 });
 
 // Baggage Tracking Service
 export const baggageApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/baggage` : '/api/baggage',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || '/api',
 });
