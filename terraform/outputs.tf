@@ -1,1 +1,1 @@
-output "vpc_id" { value = module.vpc.vpc_id }
+output "vpc_id" { value = module.vpc_primary.vpc_id }
