@@ -16,8 +16,8 @@ aws eks update-kubeconfig --region eu-west-1 --name aerolink-dev-secondary-clust
 $env:KUBECONFIG = "$HOME\.kube\config-primary"
 
 Write-Host "[3/8] Retrieving New AWS Credentials..." -ForegroundColor Yellow
-$dbEndpoint = aws rds describe-db-clusters --db-cluster-identifier aerolink-aurora --query "DBClusters[0].Endpoint" --output text
-$secretArn = aws rds describe-db-clusters --db-cluster-identifier aerolink-aurora --query "DBClusters[0].MasterUserSecret.SecretArn" --output text
+$dbEndpoint = aws rds describe-db-clusters --db-cluster-identifier aerolink-aurora-primary --query "DBClusters[0].Endpoint" --output text
+$secretArn = aws rds describe-db-clusters --db-cluster-identifier aerolink-aurora-primary --query "DBClusters[0].MasterUserSecret.SecretArn" --output text
 $secretString = aws secretsmanager get-secret-value --secret-id $secretArn --query "SecretString" --output text
 $dbPassword = ($secretString | ConvertFrom-Json).password
 
