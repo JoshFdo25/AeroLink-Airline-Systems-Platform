@@ -4,6 +4,7 @@ resource "aws_rds_global_cluster" "aerolink_global" {
   engine                    = "aurora-postgresql"
   engine_version            = "15.8"
   database_name             = "postgres"
+  storage_encrypted         = true
 }
 
 module "aurora_primary" {
