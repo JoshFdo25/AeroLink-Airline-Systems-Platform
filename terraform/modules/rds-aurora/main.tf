@@ -2,7 +2,7 @@ resource "aws_rds_global_cluster" "aerolink_global" {
   provider                  = aws.primary
   global_cluster_identifier = "aerolink-global"
   engine                    = "aurora-postgresql"
-  engine_version            = "15.4"
+  engine_version            = "15.8"
   database_name             = "postgres"
 }
 
@@ -11,7 +11,7 @@ module "aurora_primary" {
   version              = "~> 9.0"
   name                 = "aerolink-aurora-primary"
   engine               = "aurora-postgresql"
-  engine_version       = "15.4"
+  engine_version       = "15.8"
   master_username      = "postgres"
   skip_final_snapshot  = true
   vpc_id               = var.vpc_id
@@ -42,7 +42,7 @@ module "aurora_secondary" {
   version              = "~> 9.0"
   name                 = "aerolink-aurora-secondary"
   engine               = "aurora-postgresql"
-  engine_version       = "15.4"
+  engine_version       = "15.8"
   skip_final_snapshot  = true
   vpc_id               = var.vpc_id_secondary
   db_subnet_group_name = var.database_subnet_group_name_secondary
