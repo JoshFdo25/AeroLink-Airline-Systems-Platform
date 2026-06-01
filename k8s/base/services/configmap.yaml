@@ -22,3 +22,4 @@ data:
   NEXT_PUBLIC_BAGGAGE_API_URL: "http://baggage-service.aerolink.svc.cluster.local:80"
 
 
+
