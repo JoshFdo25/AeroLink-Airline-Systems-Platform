@@ -10,7 +10,7 @@ data:
   DYNAMODB_TABLE_NAME: "aerolink-baggage"
   EVENT_BUS_NAME: "aerolink-saga-bus"
   REDIS_URL: "redis://aerolink-redis.n5hbdw.0001.use1.cache.amazonaws.com:6379"
-  DATABASE_URL: "postgresql://postgres:%5bYFr83R%24F)eT%7e9NhNV%23A%3az8SFD%3fG@aerolink-aurora.cluster-cyv4e2ee83we.us-east-1.rds.amazonaws.com:5432/postgres?schema=public&sslmode=no-verify"
+  DATABASE_URL: "postgresql://postgres:%3fR%3c%3eh29%5dTR2.!hw3Ujr745DLl.U!@aerolink-aurora.cluster-cyv4e2ee83we.us-east-1.rds.amazonaws.com:5432/postgres?schema=public&sslmode=no-verify"
   COGNITO_USER_POOL_ID: "us-east-1_0yTqDZoNg"
   COGNITO_CLIENT_ID: "45u44ci33uieccj8iv62qlms05"
   
@@ -20,4 +20,5 @@ data:
   NEXT_PUBLIC_AUTH_API_URL: "http://auth-service.aerolink.svc.cluster.local:80"
   NEXT_PUBLIC_BOOKING_API_URL: "http://booking-service.aerolink.svc.cluster.local:80"
   NEXT_PUBLIC_BAGGAGE_API_URL: "http://baggage-service.aerolink.svc.cluster.local:80"
+
 
