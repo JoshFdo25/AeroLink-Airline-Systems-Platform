@@ -2,6 +2,7 @@ module "eks" {
   source                         = "terraform-aws-modules/eks/aws"
   version                        = "~> 20.0"
   cluster_name                   = "aerolink-${var.environment}-cluster"
+  iam_role_use_name_prefix       = false
   cluster_version                = "1.30"
   cluster_endpoint_public_access = true
   vpc_id                         = var.vpc_id
