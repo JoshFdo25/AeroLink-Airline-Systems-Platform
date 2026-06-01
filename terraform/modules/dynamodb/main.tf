@@ -8,4 +8,8 @@ resource "aws_dynamodb_table" "baggage" {
   }
   stream_enabled   = true
   stream_view_type = "NEW_AND_OLD_IMAGES"
+  
+  replica {
+    region_name = var.secondary_region
+  }
 }

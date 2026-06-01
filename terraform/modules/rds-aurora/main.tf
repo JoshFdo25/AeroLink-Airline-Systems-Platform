@@ -1,12 +1,23 @@
-module "aurora" {
+resource "aws_rds_global_cluster" "aerolink_global" {
+  provider                  = aws.primary
+  global_cluster_identifier = "aerolink-global"
+  engine                    = "aurora-postgresql"
+  engine_version            = "15.4"
+  database_name             = "postgres"
+}
+
+module "aurora_primary" {
   source               = "terraform-aws-modules/rds-aurora/aws"
   version              = "~> 9.0"
-  name                 = "aerolink-aurora"
+  name                 = "aerolink-aurora-primary"
   engine               = "aurora-postgresql"
+  engine_version       = "15.4"
   master_username      = "postgres"
   skip_final_snapshot  = true
   vpc_id               = var.vpc_id
   db_subnet_group_name = var.database_subnet_group_name
+  global_cluster_identifier = aws_rds_global_cluster.aerolink_global.id
+  
   security_group_rules = {
     vpc_ingress = {
       cidr_blocks = var.private_subnets_cidr_blocks
@@ -19,5 +30,43 @@ module "aurora" {
   instance_class = "db.serverless"
   instances = {
     one = {}
+  }
+  
+  providers = {
+    aws = aws.primary
+  }
+}
+
+module "aurora_secondary" {
+  source               = "terraform-aws-modules/rds-aurora/aws"
+  version              = "~> 9.0"
+  name                 = "aerolink-aurora-secondary"
+  engine               = "aurora-postgresql"
+  engine_version       = "15.4"
+  skip_final_snapshot  = true
+  vpc_id               = var.vpc_id_secondary
+  db_subnet_group_name = var.database_subnet_group_name_secondary
+  global_cluster_identifier = aws_rds_global_cluster.aerolink_global.id
+  
+  # Secondary cluster shouldn't have a master_username, it inherits from global
+  
+  security_group_rules = {
+    vpc_ingress = {
+      cidr_blocks = var.private_subnets_cidr_blocks_secondary
+    }
+  }
+  serverlessv2_scaling_configuration = {
+    min_capacity = 0.5
+    max_capacity = 2.0
+  }
+  instance_class = "db.serverless"
+  instances = {
+    one = {}
+  }
+  
+  depends_on = [module.aurora_primary]
+  
+  providers = {
+    aws = aws.secondary
   }
 }
