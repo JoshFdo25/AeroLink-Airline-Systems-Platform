@@ -40,6 +40,7 @@ export default function AdminLogin() {
           try {
             const userRes = await authApi.get("/passengers/me");
             localStorage.setItem("aerolink_role", userRes.data.role);
+            localStorage.setItem("aerolink_user_id", userRes.data.id);
           } catch (e) {
             console.error("Failed to fetch role", e);
           }

@@ -14,7 +14,7 @@ export class PassengersController {
   @ApiOperation({ summary: 'Get current logged-in passenger profile' })
   async getProfile(@Request() req) {
     const passenger = await this.prisma.passenger.findUnique({
-      where: { id: req.user.userId },
+      where: { email: req.user.email },
       select: {
         id: true,
         email: true,
