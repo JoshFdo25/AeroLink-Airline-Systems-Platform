@@ -1,6 +1,6 @@
 import { Controller, Get, Request, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { CognitoAuthGuard } from '../auth/cognito.guard';
 import { PrismaService } from '../prisma/prisma.service';
 
 @ApiTags('passengers')
@@ -9,7 +9,7 @@ export class PassengersController {
   constructor(private prisma: PrismaService) {}
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(CognitoAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current logged-in passenger profile' })
   async getProfile(@Request() req) {

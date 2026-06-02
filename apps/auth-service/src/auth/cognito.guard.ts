@@ -10,7 +10,7 @@ export class CognitoAuthGuard implements CanActivate {
     if (process.env.COGNITO_USER_POOL_ID && process.env.COGNITO_CLIENT_ID && !process.env.COGNITO_USER_POOL_ID.includes('xxxx')) {
       this.verifier = CognitoJwtVerifier.create({
         userPoolId: process.env.COGNITO_USER_POOL_ID,
-        tokenUse: "access",
+        tokenUse: "id",
         clientId: process.env.COGNITO_CLIENT_ID,
       });
     }
@@ -31,8 +31,8 @@ export class CognitoAuthGuard implements CanActivate {
       if (!this.verifier) throw new Error("Cognito verifier not initialized");
       const payload = await this.verifier.verify(token);
       
-      // Inject user profile into request based on Cognito username (email)
-      const user = await this.prisma.passenger.findUnique({ where: { email: payload.username } });
+      // Inject user profile into request based on Cognito email
+      const user = await this.prisma.passenger.findUnique({ where: { email: payload.email as string } });
       if (user) {
          request.user = { userId: user.id, email: user.email, role: user.role, kycVerified: user.kycVerified };
       }
