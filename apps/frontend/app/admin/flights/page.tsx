@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Terminal, Plus, Trash2, Plane, Activity, ChevronLeft } from "lucide-react";
 import { flightApi } from "../../../lib/api";
-import { getUserRole } from "../../../lib/auth";
+import { getUserId } from "../../../lib/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -23,8 +23,8 @@ export default function FlightOperations() {
   // or allow simple ISO string input. Let's auto-generate them on submit for simplicity.
 
   useEffect(() => {
-    const role = getUserRole();
-    if (role !== "ADMIN") {
+    const userId = getUserId();
+    if (!userId) {
       router.push("/admin/login");
       return;
     }

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Server, Users, Plane, ShieldCheck, LogOut, Terminal, Zap } from "lucide-react";
 import { flightApi } from "../../../lib/api";
-import { removeToken, getUserRole } from "../../../lib/auth";
+import { removeToken, getUserId } from "../../../lib/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -14,8 +14,8 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    const role = getUserRole();
-    if (role !== "ADMIN") {
+    const userId = getUserId();
+    if (!userId) {
       router.push("/admin/login");
       return;
     }
