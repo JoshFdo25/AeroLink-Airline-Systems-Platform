@@ -10,9 +10,9 @@ data:
   DYNAMODB_TABLE_NAME: "aerolink-baggage"
   EVENT_BUS_NAME: "aerolink-saga-bus"
   REDIS_URL: "redis://aerolink-redis.n5hbdw.0001.use1.cache.amazonaws.com:6379"
-  DATABASE_URL: "postgresql://postgres:%3e%3dz%24rE%3f52E_-_xn2@aerolink-aurora-primary.cluster-cyv4e2ee83we.us-east-1.rds.amazonaws.com:5432/postgres?schema=public&sslmode=no-verify"
-  COGNITO_USER_POOL_ID: "us-east-1_e5mX9unc8"
-  COGNITO_CLIENT_ID: "341tl9l573uaenu3it5nn6f6oc"
+  DATABASE_URL: "postgresql://postgres:PslOb7nTLH%5bcR(E%3c@aerolink-aurora-primary.cluster-cyv4e2ee83we.us-east-1.rds.amazonaws.com:5432/postgres?schema=public&sslmode=no-verify"
+  COGNITO_USER_POOL_ID: "us-east-1_AuWyz0o0d"
+  COGNITO_CLIENT_ID: "72945cgnnjjn49ieo0vnqq2usl"
   
   # API URLs (Internal Routing inside EKS via Kubernetes DNS)
   NEXT_PUBLIC_API_URL: "/api"
@@ -20,4 +20,5 @@ data:
   NEXT_PUBLIC_AUTH_API_URL: "http://auth-service.aerolink.svc.cluster.local:80"
   NEXT_PUBLIC_BOOKING_API_URL: "http://booking-service.aerolink.svc.cluster.local:80"
   NEXT_PUBLIC_BAGGAGE_API_URL: "http://baggage-service.aerolink.svc.cluster.local:80"
+
 
