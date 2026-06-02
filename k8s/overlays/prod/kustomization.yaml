@@ -20,16 +20,16 @@ images:
   newTag: latest
 - name: aerolink-auth-service
   newName: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-auth-service
-  newTag: d5e35bfadb1d678b7925e729c7c943b12f00191a
+  newTag: f521ed64ffe9e0be86cb0d6c4014c40cf401717f
 - name: aerolink-baggage-service
   newName: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-baggage-service
-  newTag: d5e35bfadb1d678b7925e729c7c943b12f00191a
+  newTag: f521ed64ffe9e0be86cb0d6c4014c40cf401717f
 - name: aerolink-booking-service
   newName: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-booking-service
-  newTag: d5e35bfadb1d678b7925e729c7c943b12f00191a
+  newTag: f521ed64ffe9e0be86cb0d6c4014c40cf401717f
 - name: aerolink-flight-service
   newName: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-flight-service
-  newTag: d5e35bfadb1d678b7925e729c7c943b12f00191a
+  newTag: f521ed64ffe9e0be86cb0d6c4014c40cf401717f
 - name: aerolink-frontend
   newName: 643942183295.dkr.ecr.us-east-1.amazonaws.com/aerolink-frontend
-  newTag: d5e35bfadb1d678b7925e729c7c943b12f00191a
+  newTag: f521ed64ffe9e0be86cb0d6c4014c40cf401717f
