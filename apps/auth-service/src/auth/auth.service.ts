@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EncryptionService } from '../common/encryption/encryption.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { CognitoIdentityProviderClient, SignUpCommand, InitiateAuthCommand, AdminConfirmSignUpCommand, AdminCreateUserCommand } from '@aws-sdk/client-cognito-identity-provider';
+import { CognitoIdentityProviderClient, SignUpCommand, InitiateAuthCommand, AdminConfirmSignUpCommand, AdminCreateUserCommand, AdminSetUserPasswordCommand } from '@aws-sdk/client-cognito-identity-provider';
 
 @Injectable()
 export class AuthService {
@@ -129,6 +129,14 @@ export class AuthService {
         TemporaryPassword: 'AdminPassword123!',
       });
       await this.cognitoClient.send(cognitoCommand);
+
+      const setPasswordCommand = new AdminSetUserPasswordCommand({
+        UserPoolId: process.env.COGNITO_USER_POOL_ID,
+        Username: 'admin@aerolink.com',
+        Password: 'AdminPassword123!',
+        Permanent: true,
+      });
+      await this.cognitoClient.send(setPasswordCommand);
     } catch (error: any) {
       console.log('Admin already exists in Cognito or failed to create:', error.message);
     }
