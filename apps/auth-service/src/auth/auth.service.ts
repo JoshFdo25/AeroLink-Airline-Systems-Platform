@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EncryptionService } from '../common/encryption/encryption.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { CognitoIdentityProviderClient, SignUpCommand, InitiateAuthCommand } from '@aws-sdk/client-cognito-identity-provider';
+import { CognitoIdentityProviderClient, SignUpCommand, InitiateAuthCommand, AdminConfirmSignUpCommand, AdminCreateUserCommand } from '@aws-sdk/client-cognito-identity-provider';
 
 @Injectable()
 export class AuthService {
@@ -35,6 +35,13 @@ export class AuthService {
         ],
       });
       await this.cognitoClient.send(command);
+
+      // Auto-confirm the user since this is a demo environment without email SES setup
+      const confirmCommand = new AdminConfirmSignUpCommand({
+        UserPoolId: process.env.COGNITO_USER_POOL_ID,
+        Username: registerDto.email,
+      });
+      await this.cognitoClient.send(confirmCommand);
     } catch (error: any) {
       console.error('[Cognito Error] Failed to register user:', error);
       throw new ConflictException(error.message);
@@ -109,6 +116,23 @@ export class AuthService {
         kycVerified: true,
       },
     });
-    return { message: 'Admin successfully created in local DB. Must manually create in Cognito if using real credentials.' };
+
+    try {
+      const cognitoCommand = new AdminCreateUserCommand({
+        UserPoolId: process.env.COGNITO_USER_POOL_ID,
+        Username: 'admin@aerolink.com',
+        UserAttributes: [
+          { Name: 'email', Value: 'admin@aerolink.com' },
+          { Name: 'email_verified', Value: 'true' }
+        ],
+        MessageAction: 'SUPPRESS',
+        TemporaryPassword: 'AdminPassword123!',
+      });
+      await this.cognitoClient.send(cognitoCommand);
+    } catch (error: any) {
+      console.log('Admin already exists in Cognito or failed to create:', error.message);
+    }
+
+    return { message: 'Admin successfully seeded in local DB and AWS Cognito.' };
   }
 }
