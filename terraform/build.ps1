@@ -117,7 +117,7 @@ Write-Host "  -> Route 53 configured! Primary: $primaryLbUrl | Secondary: $secon
 Write-Host "  -> Seeding Admin User through Primary Load Balancer ($primaryLbUrl)..."
 $success = $false
 $retry = 0
-while (-not $success -and $retry -lt 12) {
+while (-not $success -and $retry -lt 30) {
     try {
         Invoke-RestMethod -Method Post -Uri "http://$primaryLbUrl/api/auth/seed-admin" -ErrorAction Stop | Out-Null
         $success = $true
