@@ -14,6 +14,7 @@ export const getToken = (): string | null => {
 export const removeToken = () => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('aerolink_token');
+    localStorage.removeItem('aerolink_role');
   }
 };
 
@@ -37,10 +38,10 @@ export const decodeToken = (token: string) => {
 };
 
 export const getUserRole = (): string | null => {
-  const token = getToken();
-  if (!token) return null;
-  const decoded = decodeToken(token);
-  return decoded?.role || null;
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('aerolink_role');
+  }
+  return null;
 };
 
 export const getUserId = (): number | null => {

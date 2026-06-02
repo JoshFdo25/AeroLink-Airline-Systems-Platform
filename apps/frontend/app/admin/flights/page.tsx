@@ -23,8 +23,8 @@ export default function FlightOperations() {
   // or allow simple ISO string input. Let's auto-generate them on submit for simplicity.
 
   useEffect(() => {
-    const userId = getUserId();
-    if (!userId) {
+    const role = getUserRole();
+    if (role !== "ADMIN") {
       router.push("/admin/login");
       return;
     }

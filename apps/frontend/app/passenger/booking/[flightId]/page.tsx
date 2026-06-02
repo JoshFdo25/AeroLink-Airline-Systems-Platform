@@ -29,8 +29,8 @@ export default function PassengerBookingCheckout() {
   const [seatLockError, setSeatLockError] = useState("");
 
   useEffect(() => {
-    const role = getUserRole();
-    if (role !== "USER" && role !== "ADMIN") {
+    const userId = getUserId();
+    if (!userId) {
       router.push("/passenger/login");
       return;
     }

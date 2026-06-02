@@ -37,6 +37,12 @@ export default function AdminLogin() {
         const decoded = decodeToken(access_token);
         
         if (decoded) {
+          try {
+            const userRes = await authApi.get("/passengers/me");
+            localStorage.setItem("aerolink_role", userRes.data.role);
+          } catch (e) {
+            console.error("Failed to fetch role", e);
+          }
           router.push("/admin/dashboard");
         }
       }
