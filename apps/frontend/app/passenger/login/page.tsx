@@ -35,7 +35,7 @@ export default function PassengerLogin() {
         setToken(access_token);
         const decoded = decodeToken(access_token);
         
-        if (decoded?.role === "USER" || decoded?.role === "ADMIN") {
+        if (decoded) {
           router.push("/passenger/dashboard");
         }
       }

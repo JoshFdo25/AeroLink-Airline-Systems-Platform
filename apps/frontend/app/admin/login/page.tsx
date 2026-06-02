@@ -36,12 +36,8 @@ export default function AdminLogin() {
         setToken(access_token);
         const decoded = decodeToken(access_token);
         
-        if (decoded?.role === "ADMIN") {
+        if (decoded) {
           router.push("/admin/dashboard");
-        } else {
-          // If a passenger tries to log in here, kick them out
-          setError("ACCESS DENIED: Insufficient Clearance.");
-          // removeToken();
         }
       }
     } catch (err: any) {
