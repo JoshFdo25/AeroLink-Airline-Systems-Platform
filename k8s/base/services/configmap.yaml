@@ -20,3 +20,4 @@ data:
   NEXT_PUBLIC_AUTH_API_URL: "http://auth-service.aerolink.svc.cluster.local:80"
   NEXT_PUBLIC_BOOKING_API_URL: "http://booking-service.aerolink.svc.cluster.local:80"
   NEXT_PUBLIC_BAGGAGE_API_URL: "http://baggage-service.aerolink.svc.cluster.local:80"
+
