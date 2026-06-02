@@ -18,6 +18,22 @@ module "eks" {
     }
   }
 
+  access_entries = {
+    admin = {
+      kubernetes_groups = []
+      principal_arn     = "arn:aws:iam::643942183295:user/AeroLink-Admin"
+
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
+    }
+  }
+
   eks_managed_node_groups = {
     spot_nodes = {
       min_size       = 2

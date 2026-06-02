@@ -17,9 +17,8 @@ $env:KUBECONFIG = "$HOME\.kube\config-primary"
 
 Write-Host "[3/8] Retrieving New AWS Credentials..." -ForegroundColor Yellow
 $dbEndpoint = aws rds describe-db-clusters --db-cluster-identifier aerolink-aurora-primary --query "DBClusters[0].Endpoint" --output text
-$secretArn = aws rds describe-db-clusters --db-cluster-identifier aerolink-aurora-primary --query "DBClusters[0].MasterUserSecret.SecretArn" --output text
-$secretString = aws secretsmanager get-secret-value --secret-id $secretArn --query "SecretString" --output text
-$dbPassword = ($secretString | ConvertFrom-Json).password
+$secretName = aws secretsmanager list-secrets --query "SecretList[?starts_with(Name, 'aerolink-aurora-master-password')].Name" --output text
+$dbPassword = aws secretsmanager get-secret-value --secret-id $secretName --query "SecretString" --output text
 
 # URL Encode password
 [Reflection.Assembly]::LoadWithPartialName("System.Web") | Out-Null
@@ -36,13 +35,18 @@ $configMap = Get-Content $configPath -Raw
 $newDbUrl = "postgresql://postgres:${encodedPassword}@${dbEndpoint}:5432/postgres?schema=public&sslmode=no-verify"
 $newRedisUrl = "redis://${redisEndpoint}:6379"
 
+$cognitoPoolId = aws cognito-idp list-user-pools --max-results 10 --query "UserPools[?Name=='aerolink-passenger-pool'].Id" --output text
+$cognitoClientId = aws cognito-idp list-user-pool-clients --user-pool-id $cognitoPoolId --query "UserPoolClients[0].ClientId" --output text
+
 $configMap = $configMap -replace 'DATABASE_URL:.*', "DATABASE_URL: `"$newDbUrl`""
 $configMap = $configMap -replace 'REDIS_URL:.*', "REDIS_URL: `"$newRedisUrl`""
+$configMap = $configMap -replace 'COGNITO_USER_POOL_ID:.*', "COGNITO_USER_POOL_ID: `"$cognitoPoolId`""
+$configMap = $configMap -replace 'COGNITO_CLIENT_ID:.*', "COGNITO_CLIENT_ID: `"$cognitoClientId`""
 Set-Content -Path $configPath -Value $configMap
 
 Write-Host "  -> Committing and pushing ConfigMap to GitHub..."
 git add $configPath
-git commit -m "chore: auto-update database and redis urls for new cluster"
+git commit -m "chore: auto-update database, redis, and cognito configs for new cluster"
 git push origin main
 
 Write-Host "[5/8] Installing Kubernetes Addons (Both Regions)..." -ForegroundColor Yellow
