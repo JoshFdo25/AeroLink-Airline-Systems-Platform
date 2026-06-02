@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Terminal, Plus, Trash2, Plane, Activity, ChevronLeft } from "lucide-react";
 import { flightApi } from "../../../lib/api";
-import { getUserId } from "../../../lib/auth";
+import { getUserId, getUserRole } from "../../../lib/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 

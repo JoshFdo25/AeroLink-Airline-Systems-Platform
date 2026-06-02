@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Server, Users, Plane, ShieldCheck, LogOut, Terminal, Zap } from "lucide-react";
 import { flightApi } from "../../../lib/api";
-import { removeToken, getUserId } from "../../../lib/auth";
+import { removeToken, getUserId, getUserRole } from "../../../lib/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
