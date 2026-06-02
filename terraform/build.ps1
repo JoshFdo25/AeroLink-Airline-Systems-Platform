@@ -47,6 +47,7 @@ Set-Content -Path $configPath -Value $configMap
 Write-Host "  -> Committing and pushing ConfigMap to GitHub..."
 git add $configPath
 git commit -m "chore: auto-update database, redis, and cognito configs for new cluster"
+git pull --rebase origin main
 git push origin main
 
 Write-Host "[5/8] Installing Kubernetes Addons (Both Regions)..." -ForegroundColor Yellow
