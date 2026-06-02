@@ -85,10 +85,10 @@ export class AuthService {
         },
       });
       const response = await this.cognitoClient.send(command);
-      if (!response.AuthenticationResult?.AccessToken) {
-        throw new UnauthorizedException('Missing access token from Cognito');
+      if (!response.AuthenticationResult?.IdToken) {
+        throw new UnauthorizedException('Missing IdToken from Cognito');
       }
-      accessToken = response.AuthenticationResult.AccessToken;
+      accessToken = response.AuthenticationResult.IdToken;
     } catch (error: any) {
       console.error('[Cognito Error] Failed to authenticate user:', error);
       throw new UnauthorizedException(error.message);
