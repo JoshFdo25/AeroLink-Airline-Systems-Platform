@@ -21,6 +21,16 @@ spec:
           number: 80
   - match:
     - uri:
+        prefix: /api/passengers
+    rewrite:
+      uri: /passengers
+    route:
+    - destination:
+        host: auth-service
+        port:
+          number: 80
+  - match:
+    - uri:
         prefix: /api/flights
     rewrite:
       uri: /flights
