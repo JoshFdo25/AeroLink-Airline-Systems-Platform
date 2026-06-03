@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { RedisIoAdapter } from './redis-io.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -9,6 +10,10 @@ async function bootstrap() {
   app.enableCors();
 
   // Swagger Documentation Setup
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis();
+  app.useWebSocketAdapter(redisIoAdapter);
+
   const config = new DocumentBuilder()
     .setTitle('AeroLink Flight Operations API')
     .setDescription('The API for managing flight schedules, routes, and pricing. Integrates CQRS concepts and Redis caching for high-performance reads.')
