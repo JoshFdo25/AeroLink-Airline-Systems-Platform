@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ShieldAlert, Terminal } from "lucide-react";
 import { authApi } from "../../../lib/api";
-import { setToken, decodeToken, getUserRole } from "../../../lib/auth";
+import { setToken, decodeToken, getUserRole, removeToken } from "../../../lib/auth";
 import { useRouter } from "next/navigation";
 
 export default function AdminLogin() {
@@ -39,12 +39,23 @@ export default function AdminLogin() {
         if (decoded) {
           try {
             const userRes = await authApi.get("/passengers/me");
-            localStorage.setItem("aerolink_role", userRes.data.role);
+            const role = userRes.data.role;
+            
+            if (role !== "ADMIN") {
+              removeToken();
+              setError("ACCESS DENIED: Insufficient Clearance Level.");
+              setLoading(false);
+              return;
+            }
+            
+            localStorage.setItem("aerolink_role", role);
             localStorage.setItem("aerolink_user_id", userRes.data.id);
+            router.push("/admin/dashboard");
           } catch (e) {
             console.error("Failed to fetch role", e);
+            removeToken();
+            setError("ACCESS DENIED: Could not verify clearance level.");
           }
-          router.push("/admin/dashboard");
         }
       }
     } catch (err: any) {

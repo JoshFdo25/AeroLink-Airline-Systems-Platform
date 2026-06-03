@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { LogIn, Mail, Lock, Plane } from "lucide-react";
 import { authApi } from "../../../lib/api";
-import { setToken, decodeToken, getUserRole } from "../../../lib/auth";
+import { setToken, decodeToken, getUserRole, removeToken } from "../../../lib/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -38,12 +38,23 @@ export default function PassengerLogin() {
         if (decoded) {
           try {
             const userRes = await authApi.get("/passengers/me");
-            localStorage.setItem("aerolink_role", userRes.data.role);
+            const role = userRes.data.role;
+            
+            if (role !== "USER") {
+              removeToken();
+              setError("Invalid portal. Administrators must use the Staff Terminal.");
+              setLoading(false);
+              return;
+            }
+            
+            localStorage.setItem("aerolink_role", role);
             localStorage.setItem("aerolink_user_id", userRes.data.id);
+            router.push("/passenger/dashboard");
           } catch (e) {
             console.error("Failed to fetch role", e);
+            removeToken();
+            setError("Failed to verify user profile.");
           }
-          router.push("/passenger/dashboard");
         }
       }
     } catch (err: any) {
