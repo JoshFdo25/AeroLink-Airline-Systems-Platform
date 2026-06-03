@@ -11,6 +11,7 @@ import { Logger } from '@nestjs/common';
   cors: {
     origin: '*',
   },
+  path: '/flights/socket.io',
   namespace: '/flights'
 })
 export class FlightGateway implements OnGatewayConnection, OnGatewayDisconnect {

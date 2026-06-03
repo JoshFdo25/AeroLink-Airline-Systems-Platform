@@ -62,8 +62,12 @@ export default function PassengerBookingCheckout() {
 
     initData();
 
-    // Initialize WebSocket connection to Flight Service (Port 3001)
-    const newSocket = io("http://localhost:3001/flights");
+    // Initialize WebSocket connection to Flight Service via Istio
+    const wsUrl = window.location.origin;
+    const newSocket = io(`${wsUrl}/flights`, {
+      path: "/api/flights/socket.io",
+      transports: ["websocket"],
+    });
     setSocket(newSocket);
 
     newSocket.on('connect', () => {
