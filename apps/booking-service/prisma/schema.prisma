@@ -21,6 +21,7 @@ model Booking {
   paymentToken   String        // PCI-DSS compliant token (e.g. "tok_visa")
   price          Float
   status         BookingStatus @default(PENDING)
+  flightStatus   String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 }

@@ -4,13 +4,15 @@ import { RedisBusService } from '../common/redis-bus/redis-bus.service';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, UpdateCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
 
+import { PrismaService } from '../prisma/prisma.service';
+
 @Injectable()
 export class BookingSagaService {
   private readonly logger = new Logger(BookingSagaService.name);
   private docClient: DynamoDBDocumentClient;
   private readonly tableName = process.env.DYNAMODB_TABLE_NAME || 'aerolink-baggage';
 
-  constructor(private redisBus: RedisBusService) {
+  constructor(private redisBus: RedisBusService, private prisma: PrismaService) {
     const client = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
     this.docClient = DynamoDBDocumentClient.from(client);
   }
@@ -23,7 +25,7 @@ export class BookingSagaService {
     try {
       const response = await this.docClient.send(new UpdateCommand({
         TableName: this.tableName,
-        Key: { pk: `BOOKING#${payload.bookingId}`, sk: `METADATA` },
+        Key: { id: payload.bookingId },
         UpdateExpression: 'SET #status = :status',
         ExpressionAttributeNames: { '#status': 'status' },
         ExpressionAttributeValues: { ':status': 'CONFIRMED' },
@@ -59,7 +61,7 @@ export class BookingSagaService {
     try {
       const response = await this.docClient.send(new UpdateCommand({
         TableName: this.tableName,
-        Key: { pk: `BOOKING#${payload.bookingId}`, sk: `METADATA` },
+        Key: { id: payload.bookingId },
         UpdateExpression: 'SET #status = :status',
         ExpressionAttributeNames: { '#status': 'status' },
         ExpressionAttributeValues: { ':status': 'CANCELLED' },
@@ -88,7 +90,7 @@ export class BookingSagaService {
     try {
       await this.docClient.send(new UpdateCommand({
         TableName: this.tableName,
-        Key: { pk: `BOOKING#${bookingId}`, sk: `METADATA` },
+        Key: { id: bookingId },
         UpdateExpression: 'SET #status = :status',
         ExpressionAttributeNames: { '#status': 'status' },
         ExpressionAttributeValues: { ':status': 'CANCELLED' },
@@ -105,10 +107,20 @@ export class BookingSagaService {
   async handleFlightStatusUpdate(payload: { flightId: string, status: string }) {
     this.logger.log(`Received flight status update for Flight ${payload.flightId}. Emitting notifications...`);
     
-    // In Phase 5, we shouldn't scan DynamoDB for all bookings on a flight unless we use a GSI.
-    // Since the API requires us to notify passengers, we'll emit a generic event and let the Projector/Notification service handle it,
-    // or we query Aurora from the Projector context!
-    // For now, we mock the logic.
-    this.logger.warn(`Flight status update notifications via DynamoDB require a GSI on flightId. Skipped for now.`);
+    // Query Aurora Read Model to find affected bookings
+    const bookings = await this.prisma.booking.findMany({ where: { flightId: payload.flightId } });
+    
+    for (const booking of bookings) {
+      await this.redisBus.publish('notification.send_email', {
+        passengerId: booking.passengerId,
+        subject: `Flight Status Update: Your flight ${payload.flightId} is now ${payload.status}`,
+        type: 'FLIGHT_STATUS_UPDATE',
+        data: {
+          flightId: payload.flightId,
+          status: payload.status,
+          bookingId: booking.id,
+        }
+      });
+    }
   }
 }

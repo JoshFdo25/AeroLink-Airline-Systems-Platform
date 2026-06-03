@@ -47,7 +47,7 @@ export class BaggageService {
     try {
       const response = await this.docClient.send(new UpdateCommand({
         TableName: this.tableName,
-        Key: { pk: `BAGGAGE#${id}`, sk: `METADATA` },
+        Key: { id },
         UpdateExpression: 'SET #status = :status, #location = :location, #updatedAt = :updatedAt',
         ExpressionAttributeNames: { 
           '#status': 'status', 

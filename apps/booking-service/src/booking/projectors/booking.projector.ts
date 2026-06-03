@@ -58,4 +58,17 @@ export class BookingProjector {
       this.logger.error(`[Projector] Failed to project booking.cancelled for ${payload.bookingId}`, e);
     }
   }
+
+  @OnEvent('flight.status.updated')
+  async handleFlightStatusUpdated(payload: { flightId: string, status: string }) {
+    this.logger.log(`[Projector] Projecting flight status ${payload.status} for flight ${payload.flightId} into Aurora`);
+    try {
+      await this.prisma.booking.updateMany({
+        where: { flightId: payload.flightId },
+        data: { flightStatus: payload.status },
+      });
+    } catch (e) {
+      this.logger.error(`[Projector] Failed to project flight.status.updated for ${payload.flightId}`, e);
+    }
+  }
 }
