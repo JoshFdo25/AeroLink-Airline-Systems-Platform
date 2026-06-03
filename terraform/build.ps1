@@ -17,7 +17,7 @@ $env:KUBECONFIG = "$HOME\.kube\config-primary"
 
 Write-Host "[3/8] Retrieving New AWS Credentials..." -ForegroundColor Yellow
 $dbEndpoint = aws rds describe-db-clusters --db-cluster-identifier aerolink-aurora-primary --query "DBClusters[0].Endpoint" --output text
-$secretName = aws secretsmanager list-secrets --query "SecretList[?starts_with(Name, 'aerolink-aurora-master-password')].Name" --output text
+$secretName = aws secretsmanager list-secrets --query "sort_by(SecretList, &CreatedDate)[?starts_with(Name, 'aerolink-aurora-master-password')] | [-1].Name" --output text
 $dbPassword = aws secretsmanager get-secret-value --secret-id $secretName --query "SecretString" --output text
 
 # URL Encode password
@@ -35,7 +35,7 @@ $configMap = Get-Content $configPath -Raw
 $newDbUrl = "postgresql://postgres:${encodedPassword}@${dbEndpoint}:5432/postgres?schema=public&sslmode=no-verify"
 $newRedisUrl = "redis://${redisEndpoint}:6379"
 
-$cognitoPoolId = aws cognito-idp list-user-pools --max-results 10 --query "UserPools[?Name=='aerolink-passenger-pool'].Id" --output text
+$cognitoPoolId = aws cognito-idp list-user-pools --max-results 10 --query "sort_by(UserPools, &CreationDate)[?Name=='aerolink-passenger-pool'] | [-1].Id" --output text
 $cognitoClientId = aws cognito-idp list-user-pool-clients --user-pool-id $cognitoPoolId --query "UserPoolClients[0].ClientId" --output text
 
 $configMap = $configMap -replace 'DATABASE_URL:.*', "DATABASE_URL: `"$newDbUrl`""
@@ -77,22 +77,48 @@ Start-Sleep -Seconds 30
 
 Write-Host "[8/8] Database Synchronization & Seeding (Primary Region Only)..." -ForegroundColor Yellow
 $env:KUBECONFIG = "$HOME\.kube\config-primary"
-kubectl run db-proxy --image=alpine/socat --port=5432 -n aerolink -- tcp-listen:5432,fork,reuseaddr tcp:${dbEndpoint}:5432
-Write-Host "  -> Waiting for db-proxy pod to start..."
-Start-Sleep -Seconds 15
-
-# Start port forward in the background
-$portForward = Start-Process -FilePath "kubectl" -ArgumentList "port-forward pod/db-proxy 5433:5432 -n aerolink" -PassThru -NoNewWindow
-Start-Sleep -Seconds 5
-
-Write-Host "  -> Pushing Prisma Schema..."
-$env:DATABASE_URL = "postgresql://postgres:${encodedPassword}@127.0.0.1:5433/postgres?schema=public"
+Write-Host "  -> Creating Prisma ConfigMap..."
 Set-Location -Path ".."
-npx prisma@5 db push --schema combined-schema.prisma --accept-data-loss --skip-generate
+kubectl create configmap prisma-schema --from-file=schema.prisma=combined-schema.prisma -n aerolink --dry-run=client -o yaml | kubectl apply -f -
+Set-Location -Path "terraform"
 
-Write-Host "  -> Cleaning up proxy..."
-Stop-Process -Id $portForward.Id -Force 2>$null
-kubectl delete pod db-proxy -n aerolink 2>$null
+Write-Host "  -> Pushing Prisma Schema via Kubernetes Job..."
+$jobYaml = @"
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: prisma-db-push
+  namespace: aerolink
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      containers:
+      - name: prisma
+        image: node:20
+        command: ["/bin/sh", "-c"]
+        args:
+        - "npm install -g prisma@5 && mkdir /app && cp /schema/schema.prisma /app/ && cd /app && npx prisma db push --accept-data-loss --skip-generate"
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://postgres:${encodedPassword}@${dbEndpoint}:5432/postgres?schema=public"
+        volumeMounts:
+        - name: schema-volume
+          mountPath: /schema
+      volumes:
+      - name: schema-volume
+        configMap:
+          name: prisma-schema
+      restartPolicy: Never
+"@
+
+$jobYaml | kubectl apply -f -
+
+Write-Host "  -> Waiting for Prisma Job to complete..."
+Start-Sleep -Seconds 5
+kubectl wait --for=condition=complete job/prisma-db-push -n aerolink --timeout=120s
+kubectl logs job/prisma-db-push -n aerolink
+kubectl delete job prisma-db-push -n aerolink
 
 Write-Host "  -> Waiting for Primary Istio Load Balancer to come online..."
 $primaryLbUrl = ""
@@ -128,8 +154,6 @@ while (-not $success -and $retry -lt 30) {
         $retry++
     }
 }
-
-Set-Location -Path "terraform"
 
 Write-Host ""
 Write-Host "=====================================================" -ForegroundColor Cyan

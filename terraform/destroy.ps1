@@ -54,8 +54,16 @@ foreach ($region in $regions) {
 }
 
 Write-Host "[3/3] Emptying AWS SecretsManager Recycle Bin..." -ForegroundColor Yellow
-aws secretsmanager delete-secret --secret-id aerolink-db-password-v2 --force-delete-without-recovery 2>$null
-Write-Host "  -> DB Secret permanently deleted." -ForegroundColor Green
+$secrets = aws secretsmanager list-secrets --query "SecretList[?starts_with(Name, 'aerolink-aurora-master-password')].Name" --output text
+if ($secrets) {
+    $secrets -split '\s+' | ForEach-Object {
+        if ($_) {
+            Write-Host "  -> Deleting secret $_" -ForegroundColor Red
+            aws secretsmanager delete-secret --secret-id $_ --force-delete-without-recovery 2>$null
+        }
+    }
+}
+Write-Host "  -> DB Secrets permanently deleted." -ForegroundColor Green
 
 Write-Host ""
 Write-Host "=====================================================" -ForegroundColor Cyan
