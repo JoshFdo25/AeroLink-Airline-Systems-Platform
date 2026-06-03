@@ -62,7 +62,10 @@ export default function PassengerBaggageTracker() {
       };
     } else {
       console.log("Connecting to local Socket.IO fallback...");
-      const socket: Socket = io("http://localhost:3004");
+      const wsUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+      const socket: Socket = io(`${wsUrl}/baggage`, {
+        path: '/baggage/socket.io'
+      });
       
       socket.on("connect", () => {
         console.log("Connected to local Baggage WebSocket!");

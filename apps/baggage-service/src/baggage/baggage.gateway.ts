@@ -6,6 +6,8 @@ import { Logger } from '@nestjs/common';
   cors: {
     origin: '*',
   },
+  path: '/baggage/socket.io',
+  namespace: '/baggage'
 })
 export class BaggageGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()

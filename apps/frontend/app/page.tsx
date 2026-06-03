@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search, MapPin, Calendar, PlaneTakeoff, ArrowRight } from "lucide-react";
 import { flightApi } from "../lib/api";
+import { io, Socket } from "socket.io-client";
 import Link from "next/link";
 
 export default function Home() {
@@ -24,6 +25,21 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const wsUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+    const socket: Socket = io(`${wsUrl}/flights`, {
+      path: '/flights/socket.io'
+    });
+
+    socket.on('flight.status.updated', (payload: { flightId: string, status: string }) => {
+      setFlights(prev => prev.map(f => f.id === payload.flightId ? { ...f, status: payload.status } : f));
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-start pt-20 px-4 relative overflow-hidden">

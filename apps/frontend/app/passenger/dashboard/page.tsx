@@ -6,6 +6,7 @@ import { Plane, Calendar, Luggage, Search, LogOut, Armchair, Activity } from "lu
 import { bookingApi } from "../../../lib/api";
 import { getUserId, removeToken } from "../../../lib/auth";
 import { useRouter } from "next/navigation";
+import { io, Socket } from "socket.io-client";
 import Link from "next/link";
 
 export default function PassengerDashboard() {
@@ -31,6 +32,21 @@ export default function PassengerDashboard() {
     };
     fetchBookings();
   }, [router]);
+
+  useEffect(() => {
+    const wsUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+    const socket: Socket = io(`${wsUrl}/flights`, {
+      path: '/flights/socket.io'
+    });
+
+    socket.on('flight.status.updated', (payload: { flightId: string, status: string }) => {
+      setBookings(prev => prev.map(b => b.flightId === payload.flightId ? { ...b, flightStatus: payload.status } : b));
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   const handleLogout = () => {
     removeToken();
