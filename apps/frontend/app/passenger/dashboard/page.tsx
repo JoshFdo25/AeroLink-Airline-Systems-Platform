@@ -36,7 +36,8 @@ export default function PassengerDashboard() {
   useEffect(() => {
     const wsUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
     const socket: Socket = io(`${wsUrl}/flights`, {
-      path: '/flights/socket.io'
+      path: '/api/flights/socket.io',
+      transports: ["websocket"],
     });
 
     socket.on('flight.status.updated', (payload: { flightId: string, status: string }) => {
