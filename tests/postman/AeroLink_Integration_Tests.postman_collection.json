@@ -5,20 +5,7 @@
   },
   "item": [
     {
-      "name": "Get Flights",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{BASE_URL}}/api/flights",
-          "host": ["{{BASE_URL}}"],
-          "path": ["api", "flights"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Register Passenger",
+      "name": "1. Auth: Register Passenger",
       "request": {
         "method": "POST",
         "header": [
@@ -33,8 +20,127 @@
           "host": ["{{BASE_URL}}"],
           "path": ["api", "auth", "register"]
         }
-      },
-      "response": []
+      }
+    },
+    {
+      "name": "2. Auth: Login Passenger",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"testuser@aerolink.com\",\n  \"password\": \"P@ssw0rd123!\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/auth/login",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "2.5. Auth: Get Current Passenger",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/passengers/me",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "passengers", "me"]
+        }
+      }
+    },
+    {
+      "name": "3. Flight: Get Flights",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/flights",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "flights"]
+        }
+      }
+    },
+    {
+      "name": "4. Flight: Lock Seat (Phantom Hold)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"seatNumber\": \"1A\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/flights/YOUR_FLIGHT_ID/seats/lock",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "flights", "YOUR_FLIGHT_ID", "seats", "lock"]
+        }
+      }
+    },
+    {
+      "name": "5. Booking: Create Booking (Saga)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"passengerId\": \"YOUR_PASSENGER_ID\",\n  \"flightId\": \"YOUR_FLIGHT_ID\",\n  \"seatNumber\": \"1A\",\n  \"paymentToken\": \"tok_visa\",\n  \"price\": 199.99\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/bookings",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "bookings"]
+        }
+      }
+    },
+    {
+      "name": "6. Baggage: Check-In Bag",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"passengerId\": \"YOUR_PASSENGER_ID\",\n  \"flightId\": \"YOUR_FLIGHT_ID\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/baggage",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "baggage"]
+        }
+      }
+    },
+    {
+      "name": "7. Baggage: Update Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"LOADED\",\n  \"location\": \"Gate A1\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/baggage/YOUR_BAGGAGE_ID/status",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "baggage", "YOUR_BAGGAGE_ID", "status"]
+        }
+      }
     }
   ]
 }

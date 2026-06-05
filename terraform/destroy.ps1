@@ -5,19 +5,46 @@ Write-Host " AeroLink Infrastructure Destruction Sequence" -ForegroundColor Cyan
 Write-Host "=====================================================" -ForegroundColor Cyan
 Write-Host ""
 
-Write-Host "[1/3] Sweeping for orphaned Kubernetes Load Balancers..." -ForegroundColor Yellow
+Write-Host "[1/4] Gracefully tearing down Kubernetes resources (Load Balancers)..." -ForegroundColor Yellow
+foreach ($kubeconfig in @("$HOME\.kube\config-primary", "$HOME\.kube\config-secondary")) {
+    if (Test-Path $kubeconfig) {
+        $env:KUBECONFIG = $kubeconfig
+        Write-Host "  -> Purging Istio and Load Balancers in cluster: $kubeconfig" -ForegroundColor Cyan
+        C:\Users\joshw\istio-1.22.1\bin\istioctl.exe uninstall -y --purge 2>$null
+        kubectl delete namespace istio-system --ignore-not-found=true 2>$null
+        kubectl delete namespace aerolink --ignore-not-found=true 2>$null
+    }
+}
+
+Write-Host "`n[2/4] Sweeping for orphaned AWS Load Balancers..." -ForegroundColor Yellow
 $regions = @("us-east-1", "eu-west-1")
 
 foreach ($region in $regions) {
     Write-Host "  -> Checking Region: $region" -ForegroundColor Cyan
+    
+    # Sweep Classic Load Balancers (v1)
     $lbs = aws elb describe-load-balancers --region $region --query "LoadBalancerDescriptions[*].LoadBalancerName" --output text
     if ($lbs) {
         $lbs -split '\s+' | ForEach-Object {
             if ($_) {
-                Write-Host "    -> Force deleting hidden Load Balancer: $_" -ForegroundColor Red
+                Write-Host "    -> Force deleting hidden Classic Load Balancer: $_" -ForegroundColor Red
                 aws elb delete-load-balancer --region $region --load-balancer-name $_
             }
         }
+    }
+
+    # Sweep Network/Application Load Balancers (v2)
+    $nlbs = aws elbv2 describe-load-balancers --region $region --query "LoadBalancers[*].LoadBalancerArn" --output text
+    if ($nlbs) {
+        $nlbs -split '\s+' | ForEach-Object {
+            if ($_) {
+                Write-Host "    -> Force deleting hidden Network Load Balancer: $_" -ForegroundColor Red
+                aws elbv2 delete-load-balancer --region $region --load-balancer-arn $_
+            }
+        }
+    }
+
+    if ($lbs -or $nlbs) {
         Write-Host "    -> Waiting 10 seconds for AWS to detach Network Interfaces..." -ForegroundColor DarkGray
         Start-Sleep -Seconds 10
     } else {
@@ -25,7 +52,7 @@ foreach ($region in $regions) {
     }
 }
 
-Write-Host "[2/3] Sweeping for orphaned Network Interfaces & Security Groups..." -ForegroundColor Yellow
+Write-Host "`n[3/4] Sweeping for orphaned Network Interfaces & Security Groups..." -ForegroundColor Yellow
 foreach ($region in $regions) {
     Write-Host "  -> Checking Region: $region" -ForegroundColor Cyan
     $vpcId = aws ec2 describe-vpcs --region $region --filters "Name=tag:Name,Values=*vpc*" --query "Vpcs[0].VpcId" --output text 2>$null
@@ -53,8 +80,8 @@ foreach ($region in $regions) {
     }
 }
 
-Write-Host "[3/3] Emptying AWS SecretsManager Recycle Bin..." -ForegroundColor Yellow
-$secrets = aws secretsmanager list-secrets --query "SecretList[?starts_with(Name, 'aerolink-aurora-master-password')].Name" --output text
+Write-Host "`n[4/4] Emptying AWS SecretsManager Recycle Bin..." -ForegroundColor Yellow
+$secrets = aws secretsmanager list-secrets --query "SecretList[?starts_with(Name, 'aerolink-')].Name" --output text
 if ($secrets) {
     $secrets -split '\s+' | ForEach-Object {
         if ($_) {
@@ -70,4 +97,5 @@ Write-Host "=====================================================" -ForegroundCo
 Write-Host " Launching Terraform Destroy..." -ForegroundColor Cyan
 Write-Host "=====================================================" -ForegroundColor Cyan
 
+terraform init -upgrade
 terraform destroy -auto-approve

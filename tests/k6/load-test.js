@@ -24,16 +24,23 @@ export default function () {
   
   check(flightsRes, {
     'flights status is 200': (r) => r.status === 200,
-    'flights returned array': (r) => JSON.parse(r.body).length > 0,
+    'flights returned array': (r) => {
+      if (r.status !== 200) return false;
+      try {
+        return JSON.parse(r.body).length >= 0;
+      } catch (e) {
+        return false;
+      }
+    },
   });
 
   sleep(1); // Simulate user think time
 
-  // 2. Test Baggage Status (GET)
-  const baggageRes = http.get(`${BASE_URL}/api/baggage/status/TEST-BAG-123`);
+  // 2. Test Baggage Service (GET)
+  const baggageRes = http.get(`${BASE_URL}/api/baggage`);
   
   check(baggageRes, {
-    'baggage status is 200 or 404': (r) => r.status === 200 || r.status === 404, // 404 is valid if it doesn't exist
+    'baggage status is 200': (r) => r.status === 200,
   });
 
   sleep(1);

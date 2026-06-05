@@ -9,8 +9,7 @@ resource "aws_rds_global_cluster" "aerolink_global" {
 
 resource "random_password" "master" {
   length           = 16
-  special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  special          = false
 }
 
 resource "aws_secretsmanager_secret" "db_password" {

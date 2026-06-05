@@ -5,10 +5,34 @@ Write-Host " AeroLink Infrastructure Build Sequence" -ForegroundColor Cyan
 Write-Host "=====================================================" -ForegroundColor Cyan
 Write-Host ""
 
-Write-Host "[1/8] Running Terraform Apply..." -ForegroundColor Yellow
+Write-Host "`n[1/8] Handling DynamoDB 24h Replica Safeguard..." -ForegroundColor Cyan
+terraform init
+$tableExists = aws dynamodb describe-table --table-name aerolink-baggage --region us-east-1 2>&1
+if ($tableExists -match "TableStatus") {
+    Write-Host "DynamoDB table aerolink-baggage already exists. Importing to Terraform state..."
+    terraform import "module.dynamodb.aws_dynamodb_table.baggage" aerolink-baggage 2>&1 | Out-Null
+}
+
+Write-Host "`n[2/8] Running Terraform Apply..." -ForegroundColor Cyan
 terraform apply -auto-approve
 
-Write-Host "[2/8] Authenticating to Kubernetes (Primary & Secondary)..." -ForegroundColor Yellow
+Write-Host "`n[2/8a] Waiting for EKS DNS Propagation..." -ForegroundColor Yellow
+$endpoint = (aws eks describe-cluster --name aerolink-dev-primary-cluster --region us-east-1 --query "cluster.endpoint" --output text 2>$null) -replace "https://", ""
+if ($endpoint -and $endpoint -ne "None") {
+    $resolved = $false
+    while (-not $resolved) {
+        try {
+            [System.Net.Dns]::GetHostAddresses($endpoint) | Out-Null
+            $resolved = $true
+            Write-Host "  -> Primary cluster DNS is ready!" -ForegroundColor Green
+        } catch {
+            Write-Host "  -> Waiting for DNS resolution... retrying in 5s"
+            Start-Sleep -Seconds 5
+        }
+    }
+}
+
+Write-Host "`n[2/8b] Authenticating to Kubernetes (Primary & Secondary)..." -ForegroundColor Yellow
 aws eks update-kubeconfig --region us-east-1 --name aerolink-dev-primary-cluster --kubeconfig "$HOME\.kube\config-primary"
 aws eks update-kubeconfig --region eu-west-1 --name aerolink-dev-secondary-cluster --kubeconfig "$HOME\.kube\config-secondary"
 
@@ -92,16 +116,19 @@ metadata:
 spec:
   backoffLimit: 0
   template:
+    metadata:
+      annotations:
+        proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
     spec:
       containers:
       - name: prisma
         image: node:20
         command: ["/bin/sh", "-c"]
         args:
-        - "npm install -g prisma@5 && mkdir /app && cp /schema/schema.prisma /app/ && cd /app && npx prisma db push --accept-data-loss --skip-generate"
+        - "npm install -g prisma@5 && mkdir /app && cp /schema/schema.prisma /app/ && cd /app && npx prisma db push --accept-data-loss --skip-generate; curl -sf -XPOST http://localhost:15020/quitquitquit || true"
         env:
         - name: DATABASE_URL
-          value: "postgresql://postgres:${encodedPassword}@${dbEndpoint}:5432/postgres?schema=public"
+          value: "postgresql://postgres:${encodedPassword}@${dbEndpoint}:5432/postgres?schema=public&sslmode=no-verify"
         volumeMounts:
         - name: schema-volume
           mountPath: /schema
@@ -121,18 +148,25 @@ kubectl logs job/prisma-db-push -n aerolink
 kubectl delete job prisma-db-push -n aerolink
 
 Write-Host "  -> Waiting for Primary Istio Load Balancer to come online..."
+$env:KUBECONFIG = "$HOME\.kube\config-primary"
 $primaryLbUrl = ""
-while (-not $primaryLbUrl -or $primaryLbUrl -eq "None") {
-    $primaryLbUrl = aws elb describe-load-balancers --region us-east-1 --query "LoadBalancerDescriptions[0].DNSName" --output text 2>$null
-    if (-not $primaryLbUrl -or $primaryLbUrl -eq "None") { Start-Sleep -Seconds 5 }
+$lbRetry = 0
+while ((-not $primaryLbUrl -or $primaryLbUrl -eq "<none>" -or $primaryLbUrl -eq "") -and $lbRetry -lt 60) {
+    $primaryLbUrl = (kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>$null)
+    if (-not $primaryLbUrl -or $primaryLbUrl -eq "<none>" -or $primaryLbUrl -eq "") { Start-Sleep -Seconds 10; $lbRetry++ }
 }
+if (-not $primaryLbUrl -or $primaryLbUrl -eq "<none>") { Write-Host "  -> WARNING: Primary LB not detected after timeout, continuing..." -ForegroundColor Yellow }
 
 Write-Host "  -> Waiting for Secondary Istio Load Balancer to come online..."
+$env:KUBECONFIG = "$HOME\.kube\config-secondary"
 $secondaryLbUrl = ""
-while (-not $secondaryLbUrl -or $secondaryLbUrl -eq "None") {
-    $secondaryLbUrl = aws elb describe-load-balancers --region eu-west-1 --query "LoadBalancerDescriptions[0].DNSName" --output text 2>$null
-    if (-not $secondaryLbUrl -or $secondaryLbUrl -eq "None") { Start-Sleep -Seconds 5 }
+$lbRetry = 0
+while ((-not $secondaryLbUrl -or $secondaryLbUrl -eq "<none>" -or $secondaryLbUrl -eq "") -and $lbRetry -lt 60) {
+    $secondaryLbUrl = (kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>$null)
+    if (-not $secondaryLbUrl -or $secondaryLbUrl -eq "<none>" -or $secondaryLbUrl -eq "") { Start-Sleep -Seconds 10; $lbRetry++ }
 }
+if (-not $secondaryLbUrl -or $secondaryLbUrl -eq "<none>") { Write-Host "  -> WARNING: Secondary LB not detected after timeout, continuing..." -ForegroundColor Yellow }
+$env:KUBECONFIG = "$HOME\.kube\config-primary"
 
 Write-Host "  -> Configuring Route 53 Active-Passive Failover..."
 # For the university project, we use a public hosted zone for aerolink-global.com (Assuming it's created or we just skip actual creation and mock it for the demo)
